@@ -1,0 +1,3 @@
+[environments.dev]
+store = "codal-devtest.myshopify.com" 
+password = "shptka_8af566e1269e375292ccc3c0e57415c3"
