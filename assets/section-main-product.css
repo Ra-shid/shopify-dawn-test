@@ -1584,5 +1584,5 @@ span.variant-price {
 }
 
 .product-form__input--pill input[type='radio'] + label {
-    border-radius: 6px;
+    border-radius: 5px !important;
 }
