@@ -1,5 +1,5 @@
 {% comment %}
-  Renders product variant-picker
+  Renders product variant-picker with variant prices
 
   Accepts:
   - product: {Object} product object.
@@ -12,8 +12,7 @@
   <variant-selects
     id="variant-selects-{{ section.id }}"
     data-section="{{ section.id }}"
-    {{ block.shopify_attributes }}
-  >
+    {{ block.shopify_attributes }}>
     {%- for option in product.options_with_values -%}
       {%- liquid
         assign swatch_count = option.values | map: 'swatch' | compact | size
@@ -35,21 +34,22 @@
               {{- option.selected_value -}}
             </span>
           </legend>
-          {% render 'product-variant-options',
-            product: product,
-            option: option,
-            block: block,
-            picker_type: picker_type
+          {% render 'product-variant-options'
+            , product: product
+            , option: option
+            , block: block
+            , picker_type: picker_type
           %}
+
         </fieldset>
       {%- elsif picker_type == 'button' -%}
         <fieldset class="js product-form__input product-form__input--pill">
           <legend class="form__label">{{ option.name }}</legend>
-          {% render 'product-variant-options',
-            product: product,
-            option: option,
-            block: block,
-            picker_type: picker_type
+          {% render 'product-variant-options'
+            , product: product
+            , option: option
+            , block: block
+            , picker_type: picker_type
           %}
         </fieldset>
       {%- else -%}
@@ -59,24 +59,22 @@
           </label>
           <div class="select">
             {%- if picker_type == 'swatch_dropdown' -%}
-              <span
-                data-selected-value
-                class="dropdown-swatch"
-              >
-                {% render 'swatch', swatch: option.selected_value.swatch, shape: block.settings.swatch_shape %}
+              <span data-selected-value class="dropdown-swatch">
+                {% render 'swatch'
+                  , swatch: option.selected_value.swatch
+                  , shape: block.settings.swatch_shape %}
               </span>
             {%- endif -%}
             <select
               id="Option-{{ section.id }}-{{ forloop.index0 }}"
               class="select__select"
               name="options[{{ option.name | escape }}]"
-              form="{{ product_form_id }}"
-            >
-              {% render 'product-variant-options',
-                product: product,
-                option: option,
-                block: block,
-                picker_type: picker_type
+              form="{{ product_form_id }}">
+              {% render 'product-variant-options'
+                , product: product
+                , option: option
+                , block: block
+                , picker_type: picker_type
               %}
             </select>
             <span class="svg-wrapper">
@@ -90,5 +88,43 @@
     <script type="application/json" data-selected-variant>
       {{ product.selected_or_first_available_variant | json }}
     </script>
+    <div class="prod-short-desc">
+      {% if product.metafields.custom.short_description != blank %}
+        {{ product.metafields.custom.short_description | metafield_tag }}
+      {% endif %}
+    </div>
   </variant-selects>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const variantSelects = document.querySelectorAll('variant-selects select');
+      
+      // Function to update visible prices based on selected options
+      function updateVariantPrices() {
+        // Hide all prices first
+        document.querySelectorAll('.variant-price').forEach(price => {
+          ;
+        });
+        
+        // Get selected values from all dropdowns
+        const selectedValues = Array.from(variantSelects).map(select => select.value);
+        
+        // Find matching variants
+        const matchingPrices = document.querySelectorAll(`.variant-price[data-value*="${selectedValues.join(' / ')}"]`);
+        
+        // Show matching prices
+        matchingPrices.forEach(price => {
+          price.style.display = 'block';
+        });
+      }
+      
+      // Add event listeners to all variant selects
+      variantSelects.forEach(select => {
+        select.addEventListener('change', updateVariantPrices);
+      });
+      
+      // Initialize prices on page load
+      updateVariantPrices();
+    });
+  </script>
 {%- endunless -%}
